@@ -45,7 +45,7 @@ services:
     restart: always
     image: tvial/crypto-portfolio
     volumes:
-      - config.json:/usr/src/app/config.json
+      - nodejs/config.json:/usr/src/app/config.json
     container_name: crypto-portfolio
     depends_on:
       - influxdb
