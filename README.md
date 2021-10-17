@@ -50,3 +50,12 @@ services:
     depends_on:
       - influxdb
 ```
+
+## Influxdb dashboard
+
+A default dashboard showing portfolio value in USD is available in `influxdb/` folder.
+Import it in influxdb boards panel and customize it to fit your needs.
+
+Example:
+
+![Crypto Portfolio](assets/crypto-portfolio.jpg)
