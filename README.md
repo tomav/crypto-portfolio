@@ -44,7 +44,7 @@ services:
   crypto-portfolio:
     restart: always
     image: tvial/crypto-portfolio
-    volume:
+    volumes:
       - config.json:/usr/src/app/config.json
     container_name: crypto-portfolio
     depends_on:
