@@ -261,8 +261,8 @@ exports.fetch = (config) => {
             // portfolio total
             string_to_write += `portfolio,unit=total USD=${properties_sum(portfolio, 'usd_value')}`
 
-            console.log(string_to_write)
-            // post_data(string_to_write)
+            // console.log(string_to_write)
+            post_data(string_to_write)
           });
 
         }

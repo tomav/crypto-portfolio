@@ -1,6 +1,6 @@
 {
     "influxdb": {
-        "protocol": "https",
+        "protocol": "https:",
         "hostname": "influxdb.domain.com",
         "port": 443,
         "org": "my_org",
