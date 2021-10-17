@@ -1,0 +1,33 @@
+{
+    "influxdb": {
+        "protocol": "https",
+        "hostname": "influxdb.domain.com",
+        "port": 443,
+        "org": "my_org",
+        "bucket": "crypto",
+        "token": "azertyuiop0123456789"
+    },
+    "portfolio_config": {
+        "ticker_exchange": "kraken",
+        "default_fiat_currency": "USD",
+        "exclude_list": []
+    },
+        "label": "kraken",
+        "name": "kraken",
+        "apiKey": "",
+        "secret": ""
+    }, {
+        "label": "deribit-btc",
+        "name": "deribit",
+        "apiKey": "",
+        "secret": ""
+    }, {
+        "label": "deribit-eth",
+        "name": "deribit",
+        "apiKey": "",
+        "secret": "",
+        "params": {
+            "currency": "ETH"
+        }
+    }]
+}
