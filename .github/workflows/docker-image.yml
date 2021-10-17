@@ -2,12 +2,12 @@ name: Docker image CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+    - 'master'
     paths:
     - 'nodejs/**'
-  pull_request:
-    branches: [ master ]
-    - 'nodejs/**'
+    - '.github/workflows/**'
+
 jobs:
   build:
     runs-on: ubuntu-latest
