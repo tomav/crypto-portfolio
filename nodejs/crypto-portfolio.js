@@ -8,7 +8,7 @@ const ccxt = require ('ccxt');
 
 async function get_btc_fiat_rate() {
   console.log("-> calling get_btc_fiat_rate()")
-  return tickerExchange.fetchTicker("BTC/" + default_fiat_currency)
+  return tickerExchange.fetchTicker("BTC/" + fiat_currency)
 }
 
 async function get_balance_from_exchange(e)  {
@@ -27,7 +27,7 @@ async function merge_balances(b, e) {
       // console.log("-> new amount for", asset, "is", existing_asset.amount)
     } else if (is_lower_case(asset)) {
       // console.log("-> deleted " + asset + " (not_an_asset)")
-    } else if (exclude_list.includes(asset.toUpperCase())) {
+    } else if (excluded_symbols.includes(asset.toUpperCase())) {
       // console.log("-> deleted " + asset + " (is_excluded)")
     } else if (is_too_small(amount)) {
       // console.log("-> deleted " + asset + " (is_too_small)")
@@ -41,12 +41,12 @@ async function merge_balances(b, e) {
 
 async function set_usd_value(asset, entries) {
   usd_rate = null
-  if (asset === default_fiat_currency) {
-    console.log("-- set_usd_value: skipped for " + default_fiat_currency)
+  if (asset === fiat_currency) {
+    console.log("-- set_usd_value: skipped for " + fiat_currency)
     usd_rate = 1
   } else if (is_fiat(asset)) {
-    console.log("-> set_usd_value: " + asset + " is fiat, will convert in", default_fiat_currency)
-    await eval(kraken).fetchTicker(asset + "/" + default_fiat_currency)
+    console.log("-> set_usd_value: " + asset + " is fiat, will convert in", fiat_currency)
+    await eval(kraken).fetchTicker(asset + "/" + fiat_currency)
     .then(
       (result) => {
         console.log("<- got fetchTicker for", asset, "@", result.close)
@@ -55,7 +55,7 @@ async function set_usd_value(asset, entries) {
       (error) => { console.log("-> error fetchTicker", exchange.name, error) }
     )
   } else if (!is_fiat(asset) && asset !== "BTC") {
-    console.log("-> set_usd_value: " + asset + " is NOT fiat, will convert in BTC then", default_fiat_currency)
+    console.log("-> set_usd_value: " + asset + " is NOT fiat, will convert in BTC then", fiat_currency)
     let exchange_to_use = "bitfinex"
     await eval(exchange_to_use).fetchTicker(asset + "/BTC")
     .then(
@@ -187,17 +187,17 @@ function group_by(objectArray, property) {
 exports.fetch = (config) => {
 
   global.exchanges               = config.exchanges
-  global.ticker_exchange         = config.portfolio_config.ticker_exchange
-  global.default_fiat_currency   = config.portfolio_config.default_fiat_currency
-  global.exclude_list            = config.portfolio_config.exclude_list
+  global.rate_exchange           = config.portfolio_config.rate_exchange
+  global.fiat_currency           = config.portfolio_config.fiat_currency
+  global.excluded_symbols        = config.portfolio_config.excluded_symbols
   global.influx                  = config.influxdb
   global.btc_fiat_value          = null;
 
   let assets                     = [];
   global.portfolio               = [];
 
-  let tickerExchangeIndex        = exchanges.map((e) => e.name).indexOf(ticker_exchange);
-  global.tickerExchange          = new ccxt[ticker_exchange] ({
+  let tickerExchangeIndex        = exchanges.map((e) => e.name).indexOf(rate_exchange);
+  global.tickerExchange          = new ccxt[rate_exchange] ({
     apiKey: exchanges[tickerExchangeIndex].apiKey,
     secret: exchanges[tickerExchangeIndex].secret
   });
@@ -219,7 +219,7 @@ exports.fetch = (config) => {
       get_balance_from_exchange(e).then((balance) => {
         console.log("<- got balance from", e.name)
         for (const [asset, amount] of Object.entries(balance.total)) {
-          if(!is_too_small(amount) && !exclude_list.includes(asset.toUpperCase())) {
+          if(!is_too_small(amount) && !excluded_symbols.includes(asset.toUpperCase())) {
             portfolio.push({
               label: e.label,
               name: e.name,
@@ -233,7 +233,7 @@ exports.fetch = (config) => {
 
         balance_status++
         if (balance_status == exchanges.length) {
-          console.log("<- got a unified balance! (without", default_fiat_currency, "value for now...)")
+          console.log("<- got a unified balance! (without", fiat_currency, "value for now...)")
 
           let conversion_promises = []
           let unique_assets = group_by(portfolio, 'asset')
@@ -261,8 +261,8 @@ exports.fetch = (config) => {
             // portfolio total
             string_to_write += `portfolio,unit=total USD=${properties_sum(portfolio, 'usd_value')}`
 
-            // console.log(string_to_write)
-            post_data(string_to_write)
+            console.log(string_to_write)
+            // post_data(string_to_write)
           });
 
         }

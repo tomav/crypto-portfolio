@@ -8,9 +8,9 @@
         "token": "azertyuiop0123456789"
     },
     "portfolio_config": {
-        "ticker_exchange": "kraken",
-        "default_fiat_currency": "USD",
-        "exclude_list": []
+        "rate_exchange": "kraken",
+        "fiat_currency": "USD",
+        "excluded_symbols": []
     },
         "label": "kraken",
         "name": "kraken",
