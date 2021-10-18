@@ -12,6 +12,7 @@
         "fiat_currency": "USD",
         "excluded_symbols": []
     },
+    "exchanges": [{
         "label": "kraken",
         "name": "kraken",
         "apiKey": "",
