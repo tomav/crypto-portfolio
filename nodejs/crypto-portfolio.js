@@ -1,4 +1,5 @@
 const ccxt = require ('ccxt');
+const usd_stablecoins = ["USTF0"]
 
 /******************************
  *
@@ -41,7 +42,7 @@ async function merge_balances(b, e) {
 
 async function set_usd_value(asset, entries) {
   usd_rate = null
-  if (asset === fiat_currency) {
+  if (asset === fiat_currency || usd_stablecoins.includes(asset)) {
     console.log("-- set_usd_value: skipped for " + fiat_currency)
     usd_rate = 1
   } else if (is_fiat(asset)) {
@@ -188,7 +189,7 @@ exports.fetch = (config) => {
 
   global.exchanges               = config.exchanges
   global.rate_exchange           = config.portfolio_config.rate_exchange
-  global.fiat_currency           = config.portfolio_config.fiat_currency
+  global.fiat_currency           = config.portfolio_config.fiat_currency || "USD"
   global.excluded_symbols        = config.portfolio_config.excluded_symbols
   global.influx                  = config.influxdb
   global.btc_fiat_value          = null;
@@ -205,7 +206,7 @@ exports.fetch = (config) => {
 
   get_btc_fiat_rate().then((result) => {
     btc_fiat_value = result.close
-    console.log("<- BTC worth", btc_fiat_value, "USD")
+    console.log("<- BTC worth", btc_fiat_value, fiat_currency)
 
     // balance_promises = []
     let balance_status = 0
@@ -261,7 +262,7 @@ exports.fetch = (config) => {
             // portfolio total
             string_to_write += `portfolio,unit=total USD=${properties_sum(portfolio, 'usd_value')}`
 
-            // console.log(string_to_write)
+            //console.log(string_to_write)
             post_data(string_to_write)
           });
 
