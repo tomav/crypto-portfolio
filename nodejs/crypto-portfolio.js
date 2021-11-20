@@ -8,7 +8,7 @@ const usd_stablecoins = ["USTF0"]
  *******************************/
 
 async function get_btc_fiat_rate() {
-  console.log("-> calling get_btc_fiat_rate()")
+  console.log("-> calling get_btc_fiat_rate() on", rate_exchange)
   return tickerExchange.fetchTicker("BTC/" + fiat_currency)
 }
 
@@ -18,36 +18,14 @@ async function get_balance_from_exchange(e)  {
   return eval(e.name).fetchBalance(params)
 }
 
-async function merge_balances(b, e) {
-  for (const [asset, amount] of Object.entries(b.total)) {
-    const existing_asset = assets.find(element => element.name === asset);
-    let output = {}
-    if (existing_asset) {
-      // console.log("-> existing_asset", asset, "with amount", existing_asset.amount)
-      existing_asset.amount = amount + existing_asset.amount
-      // console.log("-> new amount for", asset, "is", existing_asset.amount)
-    } else if (is_lower_case(asset)) {
-      // console.log("-> deleted " + asset + " (not_an_asset)")
-    } else if (excluded_symbols.includes(asset.toUpperCase())) {
-      // console.log("-> deleted " + asset + " (is_excluded)")
-    } else if (is_too_small(amount)) {
-      // console.log("-> deleted " + asset + " (is_too_small)")
-    } else {
-      // console.log("-> did not found existing_asset", asset, "let's add it.")
-      output = { name: asset, "amount": amount, "rate": null, "fiat_value": null, "exchange": e.name }
-      assets.push(output)
-    }
-  }
-}
-
-async function set_usd_value(asset, entries) {
+async function set_fiat_value(asset, entries) {
   usd_rate = null
   if (asset === fiat_currency || usd_stablecoins.includes(asset)) {
-    console.log("-- set_usd_value: skipped for " + fiat_currency)
+    console.log("-- set_fiat_value: skipped for " + fiat_currency)
     usd_rate = 1
   } else if (is_fiat(asset)) {
-    console.log("-> set_usd_value: " + asset + " is fiat, will convert in", fiat_currency)
-    await eval(kraken).fetchTicker(asset + "/" + fiat_currency)
+    console.log("-> set_fiat_value: " + asset + " is fiat, will convert in", fiat_currency)
+    await eval(rate_exchange).fetchTicker(asset + "/" + fiat_currency)
     .then(
       (result) => {
         console.log("<- got fetchTicker for", asset, "@", result.close)
@@ -56,7 +34,7 @@ async function set_usd_value(asset, entries) {
       (error) => { console.log("-> error fetchTicker", exchange.name, error) }
     )
   } else if (!is_fiat(asset) && asset !== "BTC") {
-    console.log("-> set_usd_value: " + asset + " is NOT fiat, will convert in BTC then", fiat_currency)
+    console.log("-> set_fiat_value: " + asset + " is NOT fiat, will convert in BTC then", fiat_currency)
     let exchange_to_use = "bitfinex"
     await eval(exchange_to_use).fetchTicker(asset + "/BTC")
     .then(
@@ -67,7 +45,7 @@ async function set_usd_value(asset, entries) {
       (error) => { console.log("-> error fetchTicker", asset.exchange, error) }
     )
   } else {
-    console.log("-- set_usd_value: calcuating BTC amount")
+    console.log("-- set_fiat_value: calcuating BTC amount")
     usd_rate = btc_fiat_value
   }
 
@@ -91,14 +69,6 @@ async function set_usd_value(asset, entries) {
   }
 }
 
-function get_max_decimal(asset) {
-  switch (asset) {
-    case "BTC": return 4
-    case "ETH": return 4
-    default: return 2
-  }
-}
-
 function is_too_small(amount) {
   let test_val = amount.toLocaleString("en-US", {maximumFractionDigits: 2})
   if (Number(test_val) === 0) {
@@ -108,14 +78,6 @@ function is_too_small(amount) {
 
 function is_lower_case(str) {
   return str == str.toLowerCase() && str != str.toUpperCase();
-}
-
-function sum_balance(arr) {
-  var total = 0;
-  arr.forEach(item => {
-      total += item.fiat_value;
-  });
-  return total
 }
 
 function format_for_influx(arr, tag, key, val) {
@@ -241,7 +203,7 @@ exports.fetch = (config) => {
           let string_to_write = ''
 
           for (const [asset, entries] of Object.entries(unique_assets)) {
-            conversion_promises.push(set_usd_value(asset, entries))
+            conversion_promises.push(set_fiat_value(asset, entries))
           }
 
           Promise.all(conversion_promises).then((values) => {
@@ -262,7 +224,7 @@ exports.fetch = (config) => {
             // portfolio total
             string_to_write += `portfolio,unit=total USD=${properties_sum(portfolio, 'usd_value')}`
 
-            //console.log(string_to_write)
+            // console.log(string_to_write)
             post_data(string_to_write)
           });
 
