@@ -1,5 +1,5 @@
 const ccxt = require ('ccxt');
-const usd_stablecoins = ["USTF0"]
+const usd_stablecoins = ["USTF0", "USDT", "USDC"]
 
 /******************************
  *
@@ -150,9 +150,9 @@ function group_by(objectArray, property) {
 exports.fetch = (config) => {
 
   global.exchanges               = config.exchanges
-  global.rate_exchange           = config.portfolio_config.rate_exchange
-  global.fiat_currency           = config.portfolio_config.fiat_currency || "USD"
-  global.excluded_symbols        = config.portfolio_config.excluded_symbols
+  global.rate_exchange           = config.preferences.rate_exchange
+  global.fiat_currency           = config.preferences.fiat_currency || "USD"
+  global.excluded_symbols        = config.preferences.excluded_symbols
   global.influx                  = config.influxdb
   global.btc_fiat_value          = null;
 
@@ -224,7 +224,7 @@ exports.fetch = (config) => {
             // portfolio total
             string_to_write += `portfolio,unit=total USD=${properties_sum(portfolio, 'usd_value')}`
 
-            // console.log(string_to_write)
+            console.log(string_to_write)
             post_data(string_to_write)
           });
 
