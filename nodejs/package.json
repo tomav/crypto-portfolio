@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ccxt": "^1.54.65"
+    "ccxt": "^2.0.70"
   },
   "devDependencies": {
   }
