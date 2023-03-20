@@ -70,7 +70,7 @@ async function set_fiat_value(asset, entries) {
 }
 
 function is_too_small(amount) {
-  let test_val = amount.toLocaleString("en-US", {maximumFractionDigits: 2})
+  let test_val = amount.toLocaleString("en-US", {maximumFractionDigits: allowed_fraction_digits})
   if (Number(test_val) === 0) {
     return true
   }
@@ -152,6 +152,7 @@ exports.fetch = (config) => {
   global.exchanges               = config.exchanges
   global.rate_exchange           = config.preferences.rate_exchange
   global.fiat_currency           = config.preferences.fiat_currency || "USD"
+  global.allowed_fraction_digits = config.preferences.allowed_fraction_digits || 3
   global.excluded_symbols        = config.preferences.excluded_symbols
   global.influx                  = config.influxdb
   global.btc_fiat_value          = null;

@@ -10,7 +10,8 @@
     "portfolio_config": {
         "rate_exchange": "kraken",
         "fiat_currency": "USD",
-        "excluded_symbols": []
+        "excluded_symbols": [],
+        "allowed_fraction_digits": 3
     },
     "exchanges": [{
         "label": "kraken",
